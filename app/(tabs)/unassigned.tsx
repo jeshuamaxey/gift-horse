@@ -1,10 +1,10 @@
 import { View, Text, StyleSheet } from 'react-native';
 
-export default function AddGiftScreen() {
+export default function UnassignedScreen() {
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Add Gift</Text>
-      <Text style={styles.subtitle}>Quick capture screen coming soon</Text>
+      <Text style={styles.title}>Unassigned Ideas</Text>
+      <Text style={styles.subtitle}>Unassigned ideas list coming soon</Text>
     </View>
   );
 }
