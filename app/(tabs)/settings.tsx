@@ -5,11 +5,13 @@ import { useThemeColors } from '@/utils/themeHelpers';
 import { Ionicons } from '@expo/vector-icons';
 import { Alert, ScrollView } from 'react-native';
 import { XStack, YStack } from 'tamagui';
+import { useRouter } from 'expo-router';
 
 export default function SettingsScreen() {
   const { signOut, user } = useAuth();
   const { data: profile } = useProfile();
   const colors = useThemeColors();
+  const router = useRouter();
 
   const bgColor = colors.background;
   const borderColor = colors.border;
@@ -93,6 +95,28 @@ export default function SettingsScreen() {
             </XStack>
           </Button>
         </YStack>
+
+        {/* Dev Tools Section - Only visible in dev mode */}
+        {__DEV__ && (
+          <YStack marginBottom="$xl">
+            <Text variant="h2" marginBottom="$md">
+              Developer Tools
+            </Text>
+            
+            <Button 
+              variant="secondary" 
+              onPress={() => router.push('/components-showcase')}
+              fullWidth
+            >
+              <XStack gap="$sm" alignItems="center">
+                <Ionicons name="layers-outline" size={20} color={colors.primary} />
+                <Text variant="button">
+                  Component Showcase
+                </Text>
+              </XStack>
+            </Button>
+          </YStack>
+        )}
 
         {/* Version */}
         <YStack alignItems="center" paddingVertical="$lg">

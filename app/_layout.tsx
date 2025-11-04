@@ -46,6 +46,14 @@ function RootLayoutNav() {
       <Stack.Screen name="onboarding" />
       <Stack.Screen name="auth" />
       <Stack.Screen name="(tabs)" />
+      {__DEV__ && <Stack.Screen 
+        name="components-showcase" 
+        options={{ 
+          presentation: 'modal',
+          headerShown: true,
+          title: 'Component Showcase',
+        }} 
+      />}
     </Stack>
   );
 }

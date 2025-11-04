@@ -91,6 +91,7 @@ export function Input({
         error={!!error}
         style={{ color: textColor }} // Explicitly set color in style for iOS compatibility
         accessibilityLabel={label || props.placeholder || 'Input'}
+        accessibilityRole="textbox"
         accessibilityState={{ 
           disabled: props.editable === false,
           invalid: !!error,
