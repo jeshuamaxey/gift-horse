@@ -154,6 +154,7 @@ export function Text({
   return (
     <RNText
       style={finalStyle}
+      allowFontScaling={true}
       {...props}
     >
       {children}
