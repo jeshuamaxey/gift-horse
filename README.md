@@ -25,6 +25,28 @@ In the output, you'll find options to open the app in a
 
 You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
 
+## Testing on Physical Devices
+
+To test on a physical Android or iOS device with your local Supabase instance:
+
+1. **Quick Setup:**
+   ```bash
+   npm run get-ip
+   ```
+   This automatically detects your local IP and creates the `.env` file.
+
+2. **Ensure both your laptop and phone are on the same Wi-Fi network**
+
+3. **Start Supabase and Expo:**
+   ```bash
+   npx supabase start
+   npm start
+   ```
+
+4. **Scan the QR code** with your physical device
+
+For detailed instructions and troubleshooting, see: [docs/15-physical-device-setup.md](docs/15-physical-device-setup.md)
+
 ## Get a fresh project
 
 When you're ready, run:
