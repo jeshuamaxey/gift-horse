@@ -1,29 +1,27 @@
-import { View, Text, StyleSheet } from 'react-native';
+import { Text } from '@/components/design-system';
+import { useThemeColors } from '@/utils/themeHelpers';
+import { YStack } from 'tamagui';
 
 export default function AddGiftScreen() {
+  const colors = useThemeColors();
+  const bgColor = colors.background;
+
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Add Gift</Text>
-      <Text style={styles.subtitle}>Quick capture screen coming soon</Text>
-    </View>
+    <YStack 
+      flex={1} 
+      justifyContent="center" 
+      alignItems="center" 
+      padding="$lg"
+      backgroundColor={bgColor}
+      style={{ backgroundColor: bgColor }}
+    >
+      <Text variant="h2" marginBottom="$sm">
+        Add Gift
+      </Text>
+      <Text variant="body" color="secondary">
+        Quick capture screen coming soon
+      </Text>
+    </YStack>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 24,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 8,
-  },
-  subtitle: {
-    fontSize: 16,
-    color: '#666',
-  },
-});
 

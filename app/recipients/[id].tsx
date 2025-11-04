@@ -1,63 +1,76 @@
+import { Avatar, Button, Card, Text } from '@/components/design-system';
 import { useGiftIdeasByRecipient } from '@/hooks/useGiftIdeas';
 import { useDeleteRecipient, useRecipient } from '@/hooks/useRecipients';
+import { useThemeColors } from '@/utils/themeHelpers';
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { ActivityIndicator, Alert, FlatList, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-
-function getInitials(name: string): string {
-  const parts = name.trim().split(' ');
-  if (parts.length === 1) {
-    return parts[0].substring(0, 2).toUpperCase();
-  }
-  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
-}
-
-function RecipientAvatar({ recipient }: { recipient: { name: string; emoji: string | null } }) {
-  if (recipient.emoji) {
-    return (
-      <View style={styles.avatar}>
-        <Text style={styles.emoji}>{recipient.emoji}</Text>
-      </View>
-    );
-  }
-  
-  return (
-    <View style={styles.avatar}>
-      <Text style={styles.initials}>{getInitials(recipient.name)}</Text>
-    </View>
-  );
-}
+import { ActivityIndicator, Alert, FlatList, ScrollView, TouchableOpacity } from 'react-native';
+import { XStack, YStack } from 'tamagui';
 
 function GiftIdeaCard({ giftIdea }: { giftIdea: any }) {
   const router = useRouter();
+  const colors = useThemeColors();
   
   const stateColors: Record<string, string> = {
-    idea: '#007AFF',
-    acquired: '#34C759',
-    gifted: '#8E8E93',
-    abandoned: '#FF3B30',
+    idea: colors.primary,
+    acquired: colors.success,
+    gifted: colors.textSecondary,
+    abandoned: colors.error,
   };
+
+  const stateColor = stateColors[giftIdea.state] || colors.textSecondary;
 
   return (
     <TouchableOpacity
-      style={styles.giftCard}
       onPress={() => router.push(`/gifts/${giftIdea.id}` as any)}
     >
-      {giftIdea.image_url && (
-        <View style={styles.giftImage}>
-          {/* Image will be implemented with expo-image later */}
-          <Ionicons name="image" size={24} color="#999" />
-        </View>
-      )}
-      <View style={styles.giftContent}>
-        <Text style={styles.giftTitle}>{giftIdea.title}</Text>
-        {giftIdea.price && (
-          <Text style={styles.giftPrice}>${giftIdea.price}</Text>
-        )}
-      </View>
-      <View style={[styles.stateBadge, { backgroundColor: stateColors[giftIdea.state] || '#999' }]}>
-        <Text style={styles.stateBadgeText}>{giftIdea.state}</Text>
-      </View>
+      <Card
+        bordered
+        backgroundColor={colors.background}
+        style={{ backgroundColor: colors.background }}
+        marginBottom="$sm"
+      >
+        <XStack alignItems="center" gap="$md">
+          {giftIdea.image_url && (
+            <YStack
+              width={48}
+              height={48}
+              borderRadius="$sm"
+              backgroundColor={colors.border}
+              justifyContent="center"
+              alignItems="center"
+              style={{ backgroundColor: colors.border }}
+            >
+              <Ionicons name="image" size={24} color={colors.textSecondary} />
+            </YStack>
+          )}
+          <YStack flex={1} gap="$xs">
+            <Text variant="body" fontWeight="500">
+              {giftIdea.title}
+            </Text>
+            {giftIdea.price && (
+              <Text variant="caption" color="secondary">
+                ${giftIdea.price}
+              </Text>
+            )}
+          </YStack>
+          <YStack
+            paddingHorizontal="$sm"
+            paddingVertical="$xs"
+            borderRadius="$xs"
+            backgroundColor={stateColor}
+            style={{ backgroundColor: stateColor }}
+          >
+            <Text
+              variant="small"
+              color="white"
+              style={{ color: '#FFFFFF', textTransform: 'capitalize' }}
+            >
+              {giftIdea.state}
+            </Text>
+          </YStack>
+        </XStack>
+      </Card>
     </TouchableOpacity>
   );
 }
@@ -68,7 +81,7 @@ export default function RecipientDetailScreen() {
   const { data: recipient, isLoading: recipientLoading } = useRecipient(id);
   const { data: giftIdeas, isLoading: ideasLoading } = useGiftIdeasByRecipient(id);
   const deleteRecipient = useDeleteRecipient();
-
+  const colors = useThemeColors();
 
   const handleDelete = () => {
     Alert.alert(
@@ -94,21 +107,32 @@ export default function RecipientDetailScreen() {
 
   if (recipientLoading || ideasLoading) {
     return (
-      <View style={styles.container}>
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" />
-        </View>
-      </View>
+      <YStack
+        flex={1}
+        backgroundColor={colors.background}
+        style={{ backgroundColor: colors.background }}
+        justifyContent="center"
+        alignItems="center"
+      >
+        <ActivityIndicator size="large" />
+      </YStack>
     );
   }
 
   if (!recipient) {
     return (
-      <View style={styles.container}>
-        <View style={styles.errorContainer}>
-          <Text style={styles.errorText}>Recipient not found</Text>
-        </View>
-      </View>
+      <YStack
+        flex={1}
+        backgroundColor={colors.background}
+        style={{ backgroundColor: colors.background }}
+        justifyContent="center"
+        alignItems="center"
+        padding="$lg"
+      >
+        <Text variant="body" color="error">
+          Recipient not found
+        </Text>
+      </YStack>
     );
   }
 
@@ -127,236 +151,106 @@ export default function RecipientDetailScreen() {
   };
 
   const birthday = formatBirthday();
+  const bgColor = colors.background;
+  const borderColor = colors.border;
+  const primaryColor = colors.primary;
+  const textSecondaryColor = colors.textSecondary;
 
   // For now, just show all gift ideas (grouping by occasion will be implemented later)
   const groupedIdeas = giftIdeas || [];
 
   return (
-    <ScrollView style={styles.container}>
-      <View style={styles.header}>
-        <RecipientAvatar recipient={recipient} />
-        <View style={styles.headerInfo}>
-          <Text style={styles.name}>{recipient.name}</Text>
-          {birthday && (
-            <Text style={styles.birthday}>Birthday: {birthday}</Text>
-          )}
-        </View>
-        <TouchableOpacity
-          style={styles.editButton}
-          onPress={() => router.push(`/recipients/${id}/edit`)}
-        >
-          <Ionicons name="create-outline" size={24} color="#007AFF" />
-        </TouchableOpacity>
-      </View>
+    <ScrollView
+      style={{ flex: 1, backgroundColor: bgColor }}
+      contentContainerStyle={{ backgroundColor: bgColor }}
+    >
+      <YStack
+        padding="$md"
+        borderBottomWidth={1}
+        borderBottomColor={borderColor}
+        backgroundColor={bgColor}
+        style={{ backgroundColor: bgColor }}
+      >
+        <XStack alignItems="center" gap="$md">
+          <Avatar
+            name={recipient.name}
+            emoji={recipient.emoji}
+            size="large"
+          />
+          <YStack flex={1} gap="$xs">
+            <Text variant="h2" fontWeight="700">
+              {recipient.name}
+            </Text>
+            {birthday && (
+              <Text variant="caption" color="secondary">
+                Birthday: {birthday}
+              </Text>
+            )}
+          </YStack>
+          <TouchableOpacity
+            style={{ padding: 8 }}
+            onPress={() => router.push(`/recipients/${id}/edit`)}
+          >
+            <Ionicons name="create-outline" size={24} color={primaryColor} />
+          </TouchableOpacity>
+        </XStack>
+      </YStack>
 
-      <View style={styles.actions}>
-        <TouchableOpacity
-          style={styles.addGiftButton}
+      <YStack padding="$md">
+        <Button
+          variant="primary"
           onPress={() => router.push(`/gifts/new?recipientId=${id}` as any)}
+          fullWidth
         >
-          <Ionicons name="add-circle" size={20} color="#fff" />
-          <Text style={styles.addGiftButtonText}>Add Gift Idea</Text>
-        </TouchableOpacity>
-      </View>
+          <XStack gap="$sm" alignItems="center">
+            <Ionicons name="add-circle" size={20} color="#FFFFFF" />
+            <Text variant="button" color="white">
+              Add Gift Idea
+            </Text>
+          </XStack>
+        </Button>
+      </YStack>
 
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Gift Ideas</Text>
+      <YStack padding="$md">
+        <Text variant="h3" marginBottom="$md">
+          Gift Ideas
+        </Text>
         {groupedIdeas.length > 0 ? (
           <FlatList
             data={groupedIdeas}
             renderItem={({ item }) => <GiftIdeaCard giftIdea={item} />}
             keyExtractor={(item) => item.id}
             scrollEnabled={false}
-            contentContainerStyle={styles.giftList}
           />
         ) : (
-          <View style={styles.emptyContainer}>
-            <Ionicons name="gift-outline" size={48} color="#ccc" />
-            <Text style={styles.emptyText}>No gift ideas yet</Text>
-            <Text style={styles.emptySubtext}>Add your first gift idea for this recipient</Text>
-          </View>
+          <YStack alignItems="center" padding="$xl" gap="$sm">
+            <Ionicons name="gift-outline" size={48} color={textSecondaryColor} />
+            <Text variant="body" fontWeight="600" marginTop="$md">
+              No gift ideas yet
+            </Text>
+            <Text variant="caption" color="secondary" textAlign="center">
+              Add your first gift idea for this recipient
+            </Text>
+          </YStack>
         )}
-      </View>
+      </YStack>
 
-      <View style={styles.dangerZone}>
-        <TouchableOpacity
-          style={styles.deleteButton}
+      <YStack padding="$md" paddingBottom="$xxl">
+        <Button
+          variant="destructive"
           onPress={handleDelete}
+          fullWidth
         >
-          <Ionicons name="trash-outline" size={20} color="#ff3b30" />
-          <Text style={styles.deleteButtonText}>Delete Recipient</Text>
-        </TouchableOpacity>
-      </View>
+          <XStack gap="$sm" alignItems="center">
+            <Ionicons name="trash-outline" size={20} color={colors.error} />
+            <Text variant="button" color="error">
+              Delete Recipient
+            </Text>
+          </XStack>
+        </Button>
+      </YStack>
     </ScrollView>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  errorContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 24,
-  },
-  errorText: {
-    color: '#ff3b30',
-    fontSize: 16,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#eee',
-  },
-  avatar: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    backgroundColor: '#f0f0f0',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 16,
-  },
-  emoji: {
-    fontSize: 32,
-  },
-  initials: {
-    fontSize: 24,
-    fontWeight: '600',
-    color: '#666',
-  },
-  headerInfo: {
-    flex: 1,
-  },
-  name: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#000',
-    marginBottom: 4,
-  },
-  birthday: {
-    fontSize: 14,
-    color: '#666',
-  },
-  editButton: {
-    padding: 8,
-  },
-  actions: {
-    padding: 16,
-  },
-  addGiftButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#007AFF',
-    padding: 16,
-    borderRadius: 8,
-    gap: 8,
-  },
-  addGiftButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  section: {
-    padding: 16,
-  },
-  sectionTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#000',
-    marginBottom: 16,
-  },
-  giftList: {
-    gap: 12,
-  },
-  giftCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 16,
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#eee',
-    marginBottom: 12,
-  },
-  giftImage: {
-    width: 48,
-    height: 48,
-    borderRadius: 8,
-    backgroundColor: '#f0f0f0',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 12,
-  },
-  giftContent: {
-    flex: 1,
-  },
-  giftTitle: {
-    fontSize: 16,
-    fontWeight: '500',
-    color: '#000',
-    marginBottom: 4,
-  },
-  giftPrice: {
-    fontSize: 14,
-    color: '#666',
-  },
-  stateBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 4,
-  },
-  stateBadgeText: {
-    color: '#fff',
-    fontSize: 12,
-    fontWeight: '600',
-    textTransform: 'capitalize',
-  },
-  emptyContainer: {
-    alignItems: 'center',
-    padding: 32,
-  },
-  emptyText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#000',
-    marginTop: 16,
-    marginBottom: 8,
-  },
-  emptySubtext: {
-    fontSize: 14,
-    color: '#666',
-    textAlign: 'center',
-  },
-  dangerZone: {
-    padding: 16,
-    paddingBottom: 32,
-  },
-  deleteButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 16,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#ff3b30',
-    gap: 8,
-  },
-  deleteButtonText: {
-    color: '#ff3b30',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-});
 

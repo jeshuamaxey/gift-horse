@@ -1,14 +1,10 @@
-import { useState, useRef } from 'react';
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-  ScrollView,
-  Dimensions,
-} from 'react-native';
-import { router } from 'expo-router';
+import { Button, Text } from '@/components/design-system';
+import { useThemeColors } from '@/utils/themeHelpers';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { router } from 'expo-router';
+import { useRef, useState } from 'react';
+import { Dimensions, Text as RNText, ScrollView } from 'react-native';
+import { XStack, YStack } from 'tamagui';
 
 const { width } = Dimensions.get('window');
 
@@ -44,7 +40,6 @@ export default function OnboardingScreen() {
 
   const handleGetStarted = async () => {
     await AsyncStorage.setItem(ONBOARDING_KEY, 'true');
-    // Small delay to ensure AsyncStorage is written before navigation
     setTimeout(() => {
       router.replace('/auth/signup');
     }, 100);
@@ -52,7 +47,6 @@ export default function OnboardingScreen() {
 
   const handleSkip = async () => {
     await AsyncStorage.setItem(ONBOARDING_KEY, 'true');
-    // Small delay to ensure AsyncStorage is written before navigation
     setTimeout(() => {
       router.replace('/auth/login');
     }, 100);
@@ -67,13 +61,17 @@ export default function OnboardingScreen() {
       });
       setCurrentSlide(nextSlide);
     } else {
-      // On last slide, go to signup
       await handleGetStarted();
     }
   };
 
+  const colors = useThemeColors();
+  const bgColor = colors.background;
+  const primaryColor = colors.primary;
+  const borderColor = colors.border;
+
   return (
-    <View style={styles.container}>
+    <YStack flex={1} backgroundColor={bgColor}>
       <ScrollView
         ref={scrollViewRef}
         horizontal
@@ -83,126 +81,85 @@ export default function OnboardingScreen() {
           const slideIndex = Math.round(event.nativeEvent.contentOffset.x / width);
           setCurrentSlide(slideIndex);
         }}
-        style={styles.scrollView}
+        style={{ flex: 1 }}
       >
         {benefits.map((benefit, index) => (
-          <View key={index} style={styles.slide}>
-            <View style={styles.content}>
-              <Text style={styles.emoji}>{benefit.emoji}</Text>
-              <Text style={styles.title}>{benefit.title}</Text>
-              <Text style={styles.description}>{benefit.description}</Text>
-            </View>
-          </View>
+          <YStack 
+            key={index} 
+            width={width}
+            flex={1}
+            justifyContent="center"
+            alignItems="center"
+            padding="$lg"
+          >
+            <YStack alignItems="center" maxWidth={320}>
+              <RNText style={{ fontSize: 80, marginBottom: 32, lineHeight: 96 }}>
+                {benefit.emoji}
+              </RNText>
+              <Text 
+                variant="h1" 
+                textAlign="center" 
+                marginBottom="$md"
+              >
+                {benefit.title}
+              </Text>
+              <Text 
+                variant="body" 
+                color="secondary"
+                textAlign="center"
+                lineHeight={24}
+              >
+                {benefit.description}
+              </Text>
+            </YStack>
+          </YStack>
         ))}
       </ScrollView>
 
-      <View style={styles.indicators}>
+      {/* Indicators */}
+      <XStack
+        justifyContent="center"
+        alignItems="center"
+        paddingVertical="$lg"
+        gap="$sm"
+      >
         {benefits.map((_, index) => (
-          <View
+          <YStack
             key={index}
-            style={[
-              styles.indicator,
-              currentSlide === index && styles.indicatorActive,
-            ]}
+            width={currentSlide === index ? 24 : 8}
+            height={8}
+            borderRadius={4}
+            backgroundColor={currentSlide === index ? primaryColor : borderColor}
           />
         ))}
-      </View>
+      </XStack>
 
-      <View style={styles.actions}>
-        <TouchableOpacity style={styles.skipButton} onPress={handleSkip}>
-          <Text style={styles.skipButtonText}>Skip</Text>
-        </TouchableOpacity>
+      {/* Action buttons */}
+      <XStack
+        justifyContent="space-between"
+        padding="$lg"
+        paddingBottom="$xxl"
+        gap="$md"
+      >
+        <Button 
+          variant="ghost" 
+          onPress={handleSkip}
+          hapticFeedback={false}
+        >
+          Skip
+        </Button>
 
-        <TouchableOpacity style={styles.primaryButton} onPress={handleNext}>
-          <Text style={styles.primaryButtonText}>
+        <YStack flex={1}>
+          <Button 
+            variant="primary" 
+            onPress={handleNext}
+            fullWidth
+          >
             {currentSlide === benefits.length - 1 ? 'Get Started' : 'Next'}
-          </Text>
-        </TouchableOpacity>
-      </View>
-    </View>
+          </Button>
+        </YStack>
+      </XStack>
+    </YStack>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-  },
-  scrollView: {
-    flex: 1,
-  },
-  slide: {
-    width,
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 24,
-  },
-  content: {
-    alignItems: 'center',
-    maxWidth: 320,
-  },
-  emoji: {
-    fontSize: 80,
-    marginBottom: 32,
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    marginBottom: 16,
-    color: '#000',
-  },
-  description: {
-    fontSize: 16,
-    textAlign: 'center',
-    color: '#666',
-    lineHeight: 24,
-  },
-  indicators: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingVertical: 24,
-    gap: 8,
-  },
-  indicator: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: '#ddd',
-  },
-  indicatorActive: {
-    backgroundColor: '#007AFF',
-    width: 24,
-  },
-  actions: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    padding: 24,
-    paddingBottom: 48,
-  },
-  skipButton: {
-    paddingVertical: 16,
-    paddingHorizontal: 24,
-  },
-  skipButtonText: {
-    fontSize: 16,
-    color: '#666',
-  },
-  primaryButton: {
-    backgroundColor: '#007AFF',
-    borderRadius: 8,
-    paddingVertical: 16,
-    paddingHorizontal: 32,
-    flex: 1,
-    marginLeft: 16,
-    alignItems: 'center',
-  },
-  primaryButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-});
 

@@ -1,21 +1,17 @@
-import { useState } from 'react';
-import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  StyleSheet,
-  Alert,
-  ActivityIndicator,
-} from 'react-native';
-import { Link, router } from 'expo-router';
+import { Button, Input, Text } from '@/components/design-system';
 import { supabase } from '@/lib/supabase';
+import { useThemeColors } from '@/utils/themeHelpers';
+import { Link, router } from 'expo-router';
+import { useState } from 'react';
+import { ActivityIndicator, Alert } from 'react-native';
+import { YStack } from 'tamagui';
 
 export default function SignUpScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
   const [loading, setLoading] = useState(false);
+  const colors = useThemeColors();
 
   const handleSignUp = async () => {
     if (!email || !password || !fullName) {
@@ -71,23 +67,31 @@ export default function SignUpScreen() {
     ]);
   };
 
-  return (
-    <View style={styles.container}>
-      <View style={styles.content}>
-        <Text style={styles.title}>Create account</Text>
-        <Text style={styles.subtitle}>Sign up to get started</Text>
+  const bgColor = colors.background;
 
-        <View style={styles.form}>
-          <TextInput
-            style={styles.input}
+  return (
+    <YStack flex={1} backgroundColor={bgColor} style={{ backgroundColor: bgColor }}>
+      <YStack 
+        flex={1} 
+        justifyContent="center" 
+        padding="$lg"
+      >
+        <Text variant="display" marginBottom="$xs">
+          Create account
+        </Text>
+        <Text variant="body" color="secondary" marginBottom="$xl">
+          Sign up to get started
+        </Text>
+
+        <YStack width="100%" gap="$md">
+          <Input
             placeholder="Full Name"
             value={fullName}
             onChangeText={setFullName}
             autoCapitalize="words"
           />
 
-          <TextInput
-            style={styles.input}
+          <Input
             placeholder="Email"
             value={email}
             onChangeText={setEmail}
@@ -96,8 +100,7 @@ export default function SignUpScreen() {
             autoComplete="email"
           />
 
-          <TextInput
-            style={styles.input}
+          <Input
             placeholder="Password"
             value={password}
             onChangeText={setPassword}
@@ -106,89 +109,24 @@ export default function SignUpScreen() {
             autoComplete="password"
           />
 
-          <TouchableOpacity
-            style={[styles.button, loading && styles.buttonDisabled]}
+          <Button
+            variant="primary"
             onPress={handleSignUp}
             disabled={loading}
+            fullWidth
           >
-            {loading ? (
-              <ActivityIndicator color="#fff" />
-            ) : (
-              <Text style={styles.buttonText}>Sign Up</Text>
-            )}
-          </TouchableOpacity>
+            {loading ? <ActivityIndicator color="#fff" /> : 'Sign Up'}
+          </Button>
 
           <Link href="/auth/login" asChild>
-            <TouchableOpacity>
-              <Text style={styles.linkText}>
-                Already have an account?{' '}
-                <Text style={styles.linkTextBold}>Sign In</Text>
+            <Button variant="secondary" fullWidth hapticFeedback={false}>
+              <Text variant="body" color="secondary">
+                Already have an account? <Text variant="bodyEmphasis" color="primary">Sign In</Text>
               </Text>
-            </TouchableOpacity>
+            </Button>
           </Link>
-        </View>
-      </View>
-    </View>
+        </YStack>
+      </YStack>
+    </YStack>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-  },
-  content: {
-    flex: 1,
-    justifyContent: 'center',
-    padding: 24,
-  },
-  title: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    marginBottom: 8,
-    color: '#000',
-  },
-  subtitle: {
-    fontSize: 16,
-    color: '#666',
-    marginBottom: 32,
-  },
-  form: {
-    width: '100%',
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 8,
-    padding: 16,
-    fontSize: 16,
-    marginBottom: 16,
-    backgroundColor: '#fff',
-  },
-  button: {
-    backgroundColor: '#007AFF',
-    borderRadius: 8,
-    padding: 16,
-    alignItems: 'center',
-    marginTop: 8,
-    marginBottom: 16,
-  },
-  buttonDisabled: {
-    opacity: 0.6,
-  },
-  buttonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  linkText: {
-    textAlign: 'center',
-    color: '#666',
-    fontSize: 14,
-  },
-  linkTextBold: {
-    fontWeight: '600',
-    color: '#007AFF',
-  },
-});
-

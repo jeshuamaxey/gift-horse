@@ -1,16 +1,10 @@
+import { Button, Input, Text } from '@/components/design-system';
 import { useCreateRecipient } from '@/hooks/useRecipients';
+import { useThemeColors } from '@/utils/themeHelpers';
 import { router } from 'expo-router';
 import { useState } from 'react';
-import {
-  ActivityIndicator,
-  Alert,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View
-} from 'react-native';
+import { ActivityIndicator, Alert, FlatList, Modal, ScrollView, Text as RNText, TouchableOpacity, View } from 'react-native';
+import { XStack, YStack } from 'tamagui';
 
 export default function NewRecipientScreen() {
   const [name, setName] = useState('');
@@ -18,12 +12,11 @@ export default function NewRecipientScreen() {
   const [birthdayMonth, setBirthdayMonth] = useState<number | null>(null);
   const [birthdayDay, setBirthdayDay] = useState<number | null>(null);
   const [birthdayYear, setBirthdayYear] = useState<number | null>(null);
-  const [showMonthPicker, setShowMonthPicker] = useState(false);
-  const [showDayPicker, setShowDayPicker] = useState(false);
-  const [showYearPicker, setShowYearPicker] = useState(false);
+  const [activePicker, setActivePicker] = useState<'month' | 'day' | 'year' | 'emoji' | null>(null);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   
   const createRecipient = useCreateRecipient();
+  const colors = useThemeColors();
 
   const handleSave = async () => {
     if (!name.trim()) {
@@ -72,384 +65,428 @@ export default function NewRecipientScreen() {
   // Popular emojis for quick selection
   const popularEmojis = ['🎂', '🎁', '🎉', '❤️', '👶', '👧', '👦', '👨', '👩', '👴', '👵', '🐶', '🐱'];
 
+  const bgColor = colors.background;
+  const borderColor = colors.border;
+  const primaryColor = colors.primary;
+  const textSecondaryColor = colors.textSecondary;
+  const errorColor = colors.error;
+  // Selected state background with 10% opacity
+  const selectedBgColor = 'rgba(0, 122, 255, 0.1)';
+
   return (
-    <ScrollView style={styles.container}>
-      <View style={styles.content}>
-        <View style={styles.field}>
-          <Text style={styles.label}>Name *</Text>
-          <TextInput
-            style={styles.input}
+    <ScrollView
+      style={{ flex: 1, backgroundColor: bgColor }}
+      contentContainerStyle={{ backgroundColor: bgColor }}
+    >
+      <YStack padding="$md" gap="$lg">
+        <YStack gap="$xs">
+          <Input
+            label="Name *"
             placeholder="Enter name"
             value={name}
             onChangeText={setName}
             autoFocus
           />
-        </View>
+        </YStack>
 
-        <View style={styles.field}>
-          <Text style={styles.label}>Emoji</Text>
+        <YStack gap="$xs">
+          <Text variant="caption" color="secondary">
+            Emoji
+          </Text>
           <TouchableOpacity
-            style={styles.emojiButton}
             onPress={() => setShowEmojiPicker(!showEmojiPicker)}
           >
-            {emoji ? (
-              <Text style={styles.emojiDisplay}>{emoji}</Text>
-            ) : (
-              <Text style={styles.emojiPlaceholder}>Tap to add emoji</Text>
-            )}
+            <YStack
+              borderWidth={1}
+              borderColor={borderColor}
+              borderRadius="$sm"
+              padding="$md"
+              alignItems="center"
+              backgroundColor={bgColor}
+              style={{ backgroundColor: bgColor }}
+            >
+              {emoji ? (
+                <RNText style={{ fontSize: 32 }}>{emoji}</RNText>
+              ) : (
+                <Text variant="body" color="secondary">
+                  Tap to add emoji
+                </Text>
+              )}
+            </YStack>
           </TouchableOpacity>
           
           {showEmojiPicker && (
-            <View style={styles.emojiPicker}>
-              <View style={styles.emojiGrid}>
+            <YStack
+              marginTop="$sm"
+              padding="$md"
+              borderWidth={1}
+              borderColor={borderColor}
+              borderRadius="$sm"
+              backgroundColor={bgColor}
+              style={{ backgroundColor: bgColor }}
+            >
+              <XStack flexWrap="wrap" gap="$sm">
                 {popularEmojis.map((e) => (
                   <TouchableOpacity
                     key={e}
-                    style={styles.emojiOption}
                     onPress={() => {
                       setEmoji(e);
                       setShowEmojiPicker(false);
                     }}
                   >
-                    <Text style={styles.emojiOptionText}>{e}</Text>
+                    <YStack
+                      width={48}
+                      height={48}
+                      justifyContent="center"
+                      alignItems="center"
+                      backgroundColor={bgColor}
+                      borderRadius="$sm"
+                      borderWidth={1}
+                      borderColor={borderColor}
+                      style={{ backgroundColor: bgColor }}
+                    >
+                      <RNText style={{ fontSize: 24 }}>{e}</RNText>
+                    </YStack>
                   </TouchableOpacity>
                 ))}
-              </View>
+              </XStack>
               <TouchableOpacity
-                style={styles.removeEmojiButton}
+                style={{ marginTop: 12, padding: 12, alignItems: 'center' }}
                 onPress={() => {
                   setEmoji('');
                   setShowEmojiPicker(false);
                 }}
               >
-                <Text style={styles.removeEmojiText}>Remove</Text>
+                <Text variant="caption" color="error">
+                  Remove
+                </Text>
               </TouchableOpacity>
-            </View>
+            </YStack>
           )}
-        </View>
+        </YStack>
 
-        <View style={styles.field}>
-          <Text style={styles.label}>Birthday</Text>
-          <Text style={styles.helperText}>Select month and day (year is optional)</Text>
+        <YStack gap="$xs">
+          <Text variant="caption" color="secondary">
+            Birthday
+          </Text>
+          <Text variant="small" color="tertiary">
+            Select month and day (year is optional)
+          </Text>
           
-          <View style={styles.birthdayRow}>
+          <XStack gap="$sm" marginTop="$xs">
             <TouchableOpacity
-              style={styles.birthdayButton}
-              onPress={() => setShowMonthPicker(true)}
+              style={{ flex: 1 }}
+              onPress={() => setActivePicker('month')}
             >
-              <Text style={styles.birthdayButtonText}>
-                {birthdayMonth ? months[birthdayMonth - 1] : 'Month'}
-              </Text>
+              <YStack
+                flex={1}
+                borderWidth={1}
+                borderColor={borderColor}
+                borderRadius="$sm"
+                padding="$md"
+                backgroundColor={bgColor}
+                alignItems="center"
+                style={{ backgroundColor: bgColor }}
+              >
+                <Text variant="caption">
+                  {birthdayMonth ? months[birthdayMonth - 1] : 'Month'}
+                </Text>
+              </YStack>
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={styles.birthdayButton}
-              onPress={() => setShowDayPicker(true)}
+              style={{ flex: 1 }}
+              onPress={() => setActivePicker('day')}
             >
-              <Text style={styles.birthdayButtonText}>
-                {birthdayDay ? birthdayDay.toString() : 'Day'}
-              </Text>
+              <YStack
+                flex={1}
+                borderWidth={1}
+                borderColor={borderColor}
+                borderRadius="$sm"
+                padding="$md"
+                backgroundColor={bgColor}
+                alignItems="center"
+                style={{ backgroundColor: bgColor }}
+              >
+                <Text variant="caption">
+                  {birthdayDay ? birthdayDay.toString() : 'Day'}
+                </Text>
+              </YStack>
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={styles.birthdayButton}
-              onPress={() => setShowYearPicker(true)}
+              style={{ flex: 1 }}
+              onPress={() => setActivePicker('year')}
             >
-              <Text style={styles.birthdayButtonText}>
-                {birthdayYear ? birthdayYear.toString() : 'Year (optional)'}
-              </Text>
+              <YStack
+                flex={1}
+                borderWidth={1}
+                borderColor={borderColor}
+                borderRadius="$sm"
+                padding="$md"
+                backgroundColor={bgColor}
+                alignItems="center"
+                style={{ backgroundColor: bgColor }}
+              >
+                <Text variant="caption">
+                  {birthdayYear ? birthdayYear.toString() : 'Year (optional)'}
+                </Text>
+              </YStack>
             </TouchableOpacity>
-          </View>
+          </XStack>
 
           {(birthdayMonth !== null || birthdayDay !== null || birthdayYear !== null) && (
-            <View style={styles.birthdayDisplay}>
-              <Text style={styles.birthdayDisplayText}>{formatBirthday()}</Text>
+            <XStack
+              alignItems="center"
+              justifyContent="space-between"
+              padding="$sm"
+              backgroundColor={bgColor}
+              borderRadius="$sm"
+              marginTop="$sm"
+              style={{ backgroundColor: bgColor }}
+            >
+              <Text variant="body" fontWeight="500">
+                {formatBirthday()}
+              </Text>
               <TouchableOpacity
-                style={styles.removeButton}
+                style={{ padding: 8 }}
                 onPress={() => {
                   setBirthdayMonth(null);
                   setBirthdayDay(null);
                   setBirthdayYear(null);
                 }}
               >
-                <Text style={styles.removeButtonText}>Clear</Text>
-              </TouchableOpacity>
-            </View>
-          )}
-
-          {showMonthPicker && (
-            <View style={styles.pickerContainer}>
-              {months.map((month, index) => (
-                <TouchableOpacity
-                  key={index}
-                  style={[
-                    styles.pickerOption,
-                    birthdayMonth === index + 1 && styles.pickerOptionSelected,
-                  ]}
-                  onPress={() => {
-                    setBirthdayMonth(index + 1);
-                    setShowMonthPicker(false);
-                  }}
-                >
-                  <Text
-                    style={[
-                      styles.pickerOptionText,
-                      birthdayMonth === index + 1 && styles.pickerOptionTextSelected,
-                    ]}
-                  >
-                    {month}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-          )}
-
-          {showDayPicker && (
-            <View style={styles.pickerContainer}>
-              {Array.from({ length: 31 }, (_, i) => i + 1).map((day) => (
-                <TouchableOpacity
-                  key={day}
-                  style={[
-                    styles.pickerOption,
-                    birthdayDay === day && styles.pickerOptionSelected,
-                  ]}
-                  onPress={() => {
-                    setBirthdayDay(day);
-                    setShowDayPicker(false);
-                  }}
-                >
-                  <Text
-                    style={[
-                      styles.pickerOptionText,
-                      birthdayDay === day && styles.pickerOptionTextSelected,
-                    ]}
-                  >
-                    {day}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-          )}
-
-          {showYearPicker && (
-            <View style={styles.pickerContainer}>
-              <TouchableOpacity
-                style={[
-                  styles.pickerOption,
-                  birthdayYear === null && styles.pickerOptionSelected,
-                ]}
-                onPress={() => {
-                  setBirthdayYear(null);
-                  setShowYearPicker(false);
-                }}
-              >
-                <Text
-                  style={[
-                    styles.pickerOptionText,
-                    birthdayYear === null && styles.pickerOptionTextSelected,
-                  ]}
-                >
-                  No year
+                <Text variant="caption" color="error">
+                  Clear
                 </Text>
               </TouchableOpacity>
-              {years.map((year) => (
-                <TouchableOpacity
-                  key={year}
-                  style={[
-                    styles.pickerOption,
-                    birthdayYear === year && styles.pickerOptionSelected,
-                  ]}
-                  onPress={() => {
-                    setBirthdayYear(year);
-                    setShowYearPicker(false);
-                  }}
-                >
-                  <Text
-                    style={[
-                      styles.pickerOptionText,
-                      birthdayYear === year && styles.pickerOptionTextSelected,
-                    ]}
-                  >
-                    {year}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </View>
+            </XStack>
           )}
-        </View>
 
-        <TouchableOpacity
-          style={[styles.saveButton, createRecipient.isPending && styles.saveButtonDisabled]}
+          {/* Month Picker Modal */}
+          <Modal
+            visible={activePicker === 'month'}
+            transparent
+            animationType="slide"
+            onRequestClose={() => setActivePicker(null)}
+          >
+            <View style={{ flex: 1, backgroundColor: 'rgba(0, 0, 0, 0.5)' }}>
+              <TouchableOpacity
+                style={{ flex: 1 }}
+                activeOpacity={1}
+                onPress={() => setActivePicker(null)}
+              />
+              <View
+                style={{
+                  backgroundColor: bgColor,
+                  borderTopLeftRadius: 16,
+                  borderTopRightRadius: 16,
+                  maxHeight: '80%',
+                }}
+              >
+                <YStack
+                  padding="$md"
+                  borderBottomWidth={1}
+                  borderBottomColor={borderColor}
+                  alignItems="center"
+                  backgroundColor={bgColor}
+                  style={{ backgroundColor: bgColor }}
+                >
+                  <Text variant="h3">Select Month</Text>
+                </YStack>
+                <FlatList
+                  data={months.map((month, index) => ({ month, index: index + 1 }))}
+                  keyExtractor={(item) => item.index.toString()}
+                  style={{ maxHeight: 400 }}
+                  renderItem={({ item }) => (
+                    <TouchableOpacity
+                      onPress={() => {
+                        setBirthdayMonth(item.index);
+                        setActivePicker(null);
+                      }}
+                    >
+                      <YStack
+                        padding="$md"
+                        borderBottomWidth={1}
+                        borderBottomColor={borderColor}
+                        backgroundColor={
+                          birthdayMonth === item.index ? selectedBgColor : bgColor
+                        }
+                        style={{
+                          backgroundColor:
+                            birthdayMonth === item.index ? selectedBgColor : bgColor,
+                        }}
+                      >
+                        <Text
+                          variant="body"
+                          fontWeight={birthdayMonth === item.index ? '600' : '400'}
+                          color={birthdayMonth === item.index ? 'primary' : 'primary'}
+                        >
+                          {item.month}
+                        </Text>
+                      </YStack>
+                    </TouchableOpacity>
+                  )}
+                />
+              </View>
+            </View>
+          </Modal>
+
+          {/* Day Picker Modal */}
+          <Modal
+            visible={activePicker === 'day'}
+            transparent
+            animationType="slide"
+            onRequestClose={() => setActivePicker(null)}
+          >
+            <View style={{ flex: 1, backgroundColor: 'rgba(0, 0, 0, 0.5)' }}>
+              <TouchableOpacity
+                style={{ flex: 1 }}
+                activeOpacity={1}
+                onPress={() => setActivePicker(null)}
+              />
+              <View
+                style={{
+                  backgroundColor: bgColor,
+                  borderTopLeftRadius: 16,
+                  borderTopRightRadius: 16,
+                  maxHeight: '80%',
+                }}
+              >
+                <YStack
+                  padding="$md"
+                  borderBottomWidth={1}
+                  borderBottomColor={borderColor}
+                  alignItems="center"
+                  backgroundColor={bgColor}
+                  style={{ backgroundColor: bgColor }}
+                >
+                  <Text variant="h3">Select Day</Text>
+                </YStack>
+                <FlatList
+                  data={Array.from({ length: 31 }, (_, i) => i + 1)}
+                  keyExtractor={(item) => item.toString()}
+                  style={{ maxHeight: 400 }}
+                  renderItem={({ item: day }) => (
+                    <TouchableOpacity
+                      onPress={() => {
+                        setBirthdayDay(day);
+                        setActivePicker(null);
+                      }}
+                    >
+                      <YStack
+                        padding="$md"
+                        borderBottomWidth={1}
+                        borderBottomColor={borderColor}
+                        backgroundColor={
+                          birthdayDay === day ? selectedBgColor : bgColor
+                        }
+                        style={{
+                          backgroundColor:
+                            birthdayDay === day ? selectedBgColor : bgColor,
+                        }}
+                      >
+                        <Text
+                          variant="body"
+                          fontWeight={birthdayDay === day ? '600' : '400'}
+                          color={birthdayDay === day ? 'primary' : 'primary'}
+                        >
+                          {day}
+                        </Text>
+                      </YStack>
+                    </TouchableOpacity>
+                  )}
+                />
+              </View>
+            </View>
+          </Modal>
+
+          {/* Year Picker Modal */}
+          <Modal
+            visible={activePicker === 'year'}
+            transparent
+            animationType="slide"
+            onRequestClose={() => setActivePicker(null)}
+          >
+            <View style={{ flex: 1, backgroundColor: 'rgba(0, 0, 0, 0.5)' }}>
+              <TouchableOpacity
+                style={{ flex: 1 }}
+                activeOpacity={1}
+                onPress={() => setActivePicker(null)}
+              />
+              <View
+                style={{
+                  backgroundColor: bgColor,
+                  borderTopLeftRadius: 16,
+                  borderTopRightRadius: 16,
+                  maxHeight: '80%',
+                }}
+              >
+                <YStack
+                  padding="$md"
+                  borderBottomWidth={1}
+                  borderBottomColor={borderColor}
+                  alignItems="center"
+                  backgroundColor={bgColor}
+                  style={{ backgroundColor: bgColor }}
+                >
+                  <Text variant="h3">Select Year</Text>
+                </YStack>
+                <FlatList
+                  data={[{ year: null, label: 'No year' }, ...years.map((year) => ({ year, label: year.toString() }))]}
+                  keyExtractor={(item) => item.year?.toString() ?? 'null'}
+                  style={{ maxHeight: 400 }}
+                  renderItem={({ item }) => (
+                    <TouchableOpacity
+                      onPress={() => {
+                        setBirthdayYear(item.year);
+                        setActivePicker(null);
+                      }}
+                    >
+                      <YStack
+                        padding="$md"
+                        borderBottomWidth={1}
+                        borderBottomColor={borderColor}
+                        backgroundColor={
+                          birthdayYear === item.year ? selectedBgColor : bgColor
+                        }
+                        style={{
+                          backgroundColor:
+                            birthdayYear === item.year ? selectedBgColor : bgColor,
+                        }}
+                      >
+                        <Text
+                          variant="body"
+                          fontWeight={birthdayYear === item.year ? '600' : '400'}
+                          color={birthdayYear === item.year ? 'primary' : 'primary'}
+                        >
+                          {item.label}
+                        </Text>
+                      </YStack>
+                    </TouchableOpacity>
+                  )}
+                />
+              </View>
+            </View>
+          </Modal>
+        </YStack>
+
+        <Button
+          variant="primary"
           onPress={handleSave}
           disabled={createRecipient.isPending}
+          fullWidth
         >
           {createRecipient.isPending ? (
-            <ActivityIndicator color="#fff" />
+            <ActivityIndicator color="#FFFFFF" />
           ) : (
-            <Text style={styles.saveButtonText}>Save</Text>
+            <Text variant="button" color="white">
+              Save
+            </Text>
           )}
-        </TouchableOpacity>
-      </View>
+        </Button>
+      </YStack>
     </ScrollView>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-  },
-  content: {
-    padding: 16,
-  },
-  field: {
-    marginBottom: 24,
-  },
-  label: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#000',
-    marginBottom: 8,
-  },
-  helperText: {
-    fontSize: 12,
-    color: '#666',
-    marginBottom: 8,
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 8,
-    padding: 16,
-    fontSize: 16,
-    backgroundColor: '#fff',
-  },
-  emojiButton: {
-    borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 8,
-    padding: 16,
-    alignItems: 'center',
-    backgroundColor: '#fff',
-  },
-  emojiDisplay: {
-    fontSize: 32,
-  },
-  emojiPlaceholder: {
-    fontSize: 16,
-    color: '#999',
-  },
-  emojiPicker: {
-    marginTop: 12,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 8,
-    backgroundColor: '#f9f9f9',
-  },
-  emojiGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-  },
-  emojiOption: {
-    width: 48,
-    height: 48,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#fff',
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#eee',
-  },
-  emojiOptionText: {
-    fontSize: 24,
-  },
-  removeEmojiButton: {
-    marginTop: 12,
-    padding: 12,
-    alignItems: 'center',
-  },
-  removeEmojiText: {
-    color: '#ff3b30',
-    fontSize: 14,
-  },
-  birthdayRow: {
-    flexDirection: 'row',
-    gap: 8,
-    marginBottom: 8,
-  },
-  birthdayButton: {
-    flex: 1,
-    borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 8,
-    padding: 16,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-  },
-  birthdayButtonText: {
-    fontSize: 14,
-    color: '#000',
-  },
-  birthdayDisplay: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: 12,
-    backgroundColor: '#f9f9f9',
-    borderRadius: 8,
-    marginTop: 8,
-  },
-  birthdayDisplayText: {
-    fontSize: 16,
-    color: '#000',
-    fontWeight: '500',
-  },
-  removeButton: {
-    padding: 8,
-  },
-  removeButtonText: {
-    color: '#ff3b30',
-    fontSize: 14,
-  },
-  pickerContainer: {
-    maxHeight: 200,
-    borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 8,
-    backgroundColor: '#fff',
-    marginTop: 8,
-  },
-  pickerOption: {
-    padding: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#eee',
-  },
-  pickerOptionSelected: {
-    backgroundColor: '#e3f2fd',
-  },
-  pickerOptionText: {
-    fontSize: 16,
-    color: '#000',
-  },
-  pickerOptionTextSelected: {
-    fontWeight: '600',
-    color: '#007AFF',
-  },
-  saveButton: {
-    backgroundColor: '#007AFF',
-    borderRadius: 8,
-    padding: 16,
-    alignItems: 'center',
-    marginTop: 8,
-  },
-  saveButtonDisabled: {
-    opacity: 0.6,
-  },
-  saveButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-});
