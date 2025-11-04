@@ -1,4 +1,4 @@
-import { Avatar, Button, Card, Text } from '@/components/design-system';
+import { AnimatedCard, Avatar, Button, Text } from '@/components/design-system';
 import { useGiftIdeasByRecipient } from '@/hooks/useGiftIdeas';
 import { useDeleteRecipient, useRecipient } from '@/hooks/useRecipients';
 import { useThemeColors } from '@/utils/themeHelpers';
@@ -21,15 +21,15 @@ function GiftIdeaCard({ giftIdea }: { giftIdea: any }) {
   const stateColor = stateColors[giftIdea.state] || colors.textSecondary;
 
   return (
-    <TouchableOpacity
+    <AnimatedCard
       onPress={() => router.push(`/gifts/${giftIdea.id}` as any)}
+      bordered
+      backgroundColor={colors.background}
+      style={{ backgroundColor: colors.background }}
+      marginBottom="$sm"
+      accessibilityLabel={`Gift idea: ${giftIdea.title}${giftIdea.price ? `, $${giftIdea.price}` : ''}, status: ${giftIdea.state}`}
+      accessibilityHint="Double tap to view gift idea details"
     >
-      <Card
-        bordered
-        backgroundColor={colors.background}
-        style={{ backgroundColor: colors.background }}
-        marginBottom="$sm"
-      >
         <XStack alignItems="center" gap="$md">
           {giftIdea.image_url && (
             <YStack
@@ -70,8 +70,7 @@ function GiftIdeaCard({ giftIdea }: { giftIdea: any }) {
             </Text>
           </YStack>
         </XStack>
-      </Card>
-    </TouchableOpacity>
+      </AnimatedCard>
   );
 }
 
@@ -188,8 +187,11 @@ export default function RecipientDetailScreen() {
             )}
           </YStack>
           <TouchableOpacity
-            style={{ padding: 8 }}
+            style={{ padding: 10, minWidth: 44, minHeight: 44, justifyContent: 'center', alignItems: 'center' }}
             onPress={() => router.push(`/recipients/${id}/edit`)}
+            accessibilityLabel="Edit recipient"
+            accessibilityRole="button"
+            accessibilityHint="Double tap to edit recipient details"
           >
             <Ionicons name="create-outline" size={24} color={primaryColor} />
           </TouchableOpacity>
@@ -201,6 +203,8 @@ export default function RecipientDetailScreen() {
           variant="primary"
           onPress={() => router.push(`/gifts/new?recipientId=${id}` as any)}
           fullWidth
+          accessibilityLabel="Add Gift Idea"
+          accessibilityHint={`Double tap to add a new gift idea for ${recipient.name}`}
         >
           <XStack gap="$sm" alignItems="center">
             <Ionicons name="add-circle" size={20} color="#FFFFFF" />
@@ -218,7 +222,9 @@ export default function RecipientDetailScreen() {
         {groupedIdeas.length > 0 ? (
           <FlatList
             data={groupedIdeas}
-            renderItem={({ item }) => <GiftIdeaCard giftIdea={item} />}
+            renderItem={({ item }) => (
+              <GiftIdeaCard giftIdea={item} />
+            )}
             keyExtractor={(item) => item.id}
             scrollEnabled={false}
           />
@@ -240,6 +246,8 @@ export default function RecipientDetailScreen() {
           variant="destructive"
           onPress={handleDelete}
           fullWidth
+          accessibilityLabel={`Delete recipient ${recipient.name}`}
+          accessibilityHint="Double tap to permanently delete this recipient. This will not delete their gift ideas."
         >
           <XStack gap="$sm" alignItems="center">
             <Ionicons name="trash-outline" size={20} color={colors.error} />

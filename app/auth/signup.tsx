@@ -85,6 +85,7 @@ export default function SignUpScreen() {
 
         <YStack width="100%" gap="$md">
           <Input
+            label="Full Name"
             placeholder="Full Name"
             value={fullName}
             onChangeText={setFullName}
@@ -92,6 +93,7 @@ export default function SignUpScreen() {
           />
 
           <Input
+            label="Email"
             placeholder="Email"
             value={email}
             onChangeText={setEmail}
@@ -101,6 +103,7 @@ export default function SignUpScreen() {
           />
 
           <Input
+            label="Password"
             placeholder="Password"
             value={password}
             onChangeText={setPassword}
@@ -114,12 +117,20 @@ export default function SignUpScreen() {
             onPress={handleSignUp}
             disabled={loading}
             fullWidth
+            accessibilityLabel="Sign Up"
+            accessibilityHint="Double tap to create a new account with your email and password"
           >
             {loading ? <ActivityIndicator color="#fff" /> : 'Sign Up'}
           </Button>
 
           <Link href="/auth/login" asChild>
-            <Button variant="secondary" fullWidth hapticFeedback={false}>
+            <Button 
+              variant="secondary" 
+              fullWidth 
+              hapticFeedback={false}
+              accessibilityLabel="Sign In"
+              accessibilityHint="Double tap to go to the sign in screen"
+            >
               <Text variant="body" color="secondary">
                 Already have an account? <Text variant="bodyEmphasis" color="primary">Sign In</Text>
               </Text>

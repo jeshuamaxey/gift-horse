@@ -1,4 +1,5 @@
 import { ComponentProps } from 'react';
+import { Platform } from 'react-native';
 import { YStack, styled, useTheme } from 'tamagui';
 
 // Card component with elevation from design philosophy
@@ -55,15 +56,40 @@ type CardProps = ComponentProps<typeof StyledCard> & {
 export function Card({ 
   children,
   bordered = false,
+  style,
   ...props 
 }: CardProps) {
   const theme = useTheme();
+  
+  // Extract elevation from props, defaulting to 'low' if not specified
+  const elevation = (props.elevation as 'low' | 'medium' | 'high' | 'none') || 'low';
+  
+  // iOS shadows are more prominent, so we reduce opacity and radius on iOS
+  const getShadowOverrides = () => {
+    if (Platform.OS !== 'ios' || elevation === 'none') {
+      return {};
+    }
+    
+    const shadowOverrides: Record<string, { shadowOpacity: number; shadowRadius: number }> = {
+      low: { shadowOpacity: 0.04, shadowRadius: 1 },
+      medium: { shadowOpacity: 0.06, shadowRadius: 2 },
+      high: { shadowOpacity: 0.08, shadowRadius: 4 },
+    };
+    
+    return shadowOverrides[elevation] || {};
+  };
+  
+  const shadowOverrides = getShadowOverrides();
   
   return (
     <StyledCard
       backgroundColor={theme.background?.get()}
       borderColor={bordered ? theme.borderColor?.get() : undefined}
       bordered={bordered}
+      style={[
+        style,
+        shadowOverrides,
+      ]}
       {...props}
     >
       {children}

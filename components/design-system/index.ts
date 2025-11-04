@@ -1,6 +1,7 @@
 // Design System Components
 // Based on docs/12-design-philosophy.md
 
+export { AnimatedCard } from './AnimatedCard';
 export { Avatar } from './Avatar';
 export { Button } from './Button';
 export { Card } from './Card';

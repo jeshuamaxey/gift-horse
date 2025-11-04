@@ -1,4 +1,4 @@
-import { Avatar, Button, Text } from '@/components/design-system';
+import { AnimatedCard, Avatar, Button, Text } from '@/components/design-system';
 import { useRecipients } from '@/hooks/useRecipients';
 import { useThemeColors } from '@/utils/themeHelpers';
 import { Ionicons } from '@expo/vector-icons';
@@ -11,32 +11,29 @@ function RecipientItem({ recipient }: { recipient: any }) {
   const colors = useThemeColors();
 
   return (
-    <TouchableOpacity
+    <AnimatedCard
       onPress={() => router.push(`/recipients/${recipient.id}`)}
+      bordered
+      backgroundColor={colors.background}
+      style={{ backgroundColor: colors.background }}
+      marginBottom="$sm"
+      accessibilityLabel={`Recipient ${recipient.name}`}
+      accessibilityHint="Double tap to view recipient details"
     >
-      <XStack
-        alignItems="center"
-        padding="$md"
-        backgroundColor={colors.background}
-        borderRadius="$md"
-        marginBottom="$sm"
-        borderWidth={1}
-        borderColor={colors.border}
-        style={{ backgroundColor: colors.background }}
-      >
+      <XStack alignItems="center" gap="$sm">
         <Avatar 
           name={recipient.name}
           emoji={recipient.emoji}
           size="medium"
         />
-        <YStack flex={1} marginLeft="$sm">
+        <YStack flex={1}>
           <Text variant="body" fontWeight="500">
             {recipient.name}
           </Text>
         </YStack>
         <Ionicons name="chevron-forward" size={20} color={colors.textSecondary} />
       </XStack>
-    </TouchableOpacity>
+    </AnimatedCard>
   );
 }
 
@@ -104,8 +101,11 @@ export default function RecipientsScreen() {
       >
         <Text variant="largeTitle">Recipients</Text>
         <TouchableOpacity
-          style={{ padding: 8 }}
+          style={{ padding: 10, minWidth: 44, minHeight: 44, justifyContent: 'center', alignItems: 'center' }}
           onPress={() => router.push('/recipients/new')}
+          accessibilityLabel="Add new recipient"
+          accessibilityRole="button"
+          accessibilityHint="Double tap to create a new recipient"
         >
           <Ionicons name="add" size={24} color={primaryColor} />
         </TouchableOpacity>
@@ -114,7 +114,9 @@ export default function RecipientsScreen() {
       {recipients && recipients.length > 0 ? (
         <FlatList
           data={recipients}
-          renderItem={({ item }) => <RecipientItem recipient={item} />}
+          renderItem={({ item }) => (
+            <RecipientItem recipient={item} />
+          )}
           keyExtractor={(item) => item.id}
           contentContainerStyle={{ padding: 16 }}
         />
@@ -135,6 +137,8 @@ export default function RecipientsScreen() {
           <Button
             variant="primary"
             onPress={() => router.push('/recipients/new')}
+            accessibilityLabel="Add Recipient"
+            accessibilityHint="Double tap to create your first recipient"
           >
             Add Recipient
           </Button>

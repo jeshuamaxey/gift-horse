@@ -13,6 +13,8 @@ export interface ButtonProps {
   fullWidth?: boolean;
   disabled?: boolean;
   hapticFeedback?: boolean;
+  accessibilityLabel?: string;
+  accessibilityHint?: string;
 }
 
 export function Button({ 
@@ -22,6 +24,8 @@ export function Button({
   fullWidth = false,
   disabled = false,
   hapticFeedback = true,
+  accessibilityLabel,
+  accessibilityHint,
   children,
 }: ButtonProps) {
   const theme = useTheme();
@@ -125,6 +129,10 @@ export function Button({
         scale: 0.95,
         opacity: 0.9,
       }}
+      accessibilityRole="button"
+      accessibilityLabel={accessibilityLabel}
+      accessibilityHint={accessibilityHint}
+      accessibilityState={{ disabled }}
       {...colors}
       {...sizeProps}
     >
