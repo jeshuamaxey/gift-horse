@@ -123,6 +123,8 @@ export function Button({
       borderRadius="$sm"
       fontWeight="600"
       width={fullWidth ? '100%' : undefined}
+      alignSelf={fullWidth ? 'stretch' : undefined}
+      position="relative"
       opacity={disabled ? 0.6 : 1}
       pointerEvents={disabled ? 'none' : 'auto'}
       pressStyle={{
